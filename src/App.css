@@ -1,0 +1,432 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+
+  text-align: center;
+}
+
+.app-header {
+  background-color: #333;
+  color: white;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 24px;
+}
+
+
+.user-info {
+  display: flex;
+  align-items: center;
+}
+  
+.logout-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.app-main {
+  flex-grow: 1;
+  padding: 20px;
+  background-color: hwb(209 81% 3%);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* Add styles for ClockInOut component here */
+.clock-in-out-container {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.status {
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.clock-button {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.clock-button:first-child {
+  background-color: #28a745;
+  color: white;
+  margin-right: 10px;
+}
+
+.clock-button:last-child {
+  background-color: #dc3545;
+  color: white;
+}
+
+
+.login-container {
+  background-color: hwb(209 81% 3%);
+  border-radius: 10px;
+  padding: 30px;
+  width: 400px;
+  margin: 50px auto;
+  box-sizing: border-box;
+}
+
+.welcome-text {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.login-box {
+  background-color: #ffffff;
+  border-radius: 5px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 16px;
+}
+
+.login-input {
+  background-color: #f8f9fa;
+  border: none;
+  border-radius: 5px;
+  padding: 15px;
+  margin-bottom: 15px;
+  font-size: 16px;
+  width: 90%;
+}
+
+.login-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.login-error {
+  color: #dc3545;
+  text-align: center;
+  margin-top: 10px;
+}
+
+/* Add these styles to your existing App.css */
+
+.tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.tab {
+  background-color: hwb(0 100% 0%);
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.tab.active {
+  background-color: #007bff;
+  color: white;
+}
+
+.user-profile {
+  background-color: hwb(0 100% 0%);
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.user-profile p {
+  margin-bottom: 10px;
+}
+
+.user-profile strong {
+  font-weight: bold;
+}
+
+.work-hours-chart {
+  background-color: hwb(0 100% 0%);
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.work-hours-chart h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.clock-in-out-container {
+  padding: 20px;
+  text-align: center;
+}
+
+.status {
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.clock-button {
+  width: 120px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.clock-button:first-child {
+  background-color: hwb(0 100% 0%);
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.clock-button:last-child {
+  background-color: hwb(0 100% 0%);
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-right: 10px;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.entries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.entry-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+
+.status {
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.clock-button {
+  width: 120px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin: 0 10px;
+}
+
+.clock-button:first-child {
+  background-color: #28a745;
+  color: white;
+}
+
+.clock-button:last-child {
+  background-color: #dc3545;
+  color: white;
+}
+
+.entries-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.day-entries {
+  background-color: #f8f9fa;
+  border-radius: 10px;
+  padding: 15px;
+}
+
+.day-entries h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.entry-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.entry-type {
+  font-weight: bold;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.entry-type {
+  font-weight: bold;
+}
+
+.edit-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* Modal styles remain the same as before */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+.modal-content form {
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-content label {
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.modal-content input[type="text"] {
+  margin-bottom: 15px;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.modal-content button {
+  margin-top: 10px;
+  padding: 8px 15px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.modal-content button + button {
+  background-color: #dc3545;
+  margin-left: 8px;
+}
+
+.modal-content button:hover {
+  opacity: 0.9;
+}
+
+/* DatePicker styles */
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker__input-container {
+  width: 100%;
+}
+
+.react-datepicker__input-container input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+}
+
+.react-datepicker__input-container input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
