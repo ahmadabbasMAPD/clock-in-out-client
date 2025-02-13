@@ -6,6 +6,7 @@ import './ClockInOut.css';
 import api from './api';
 
 const ClockInOut = () => {
+  // Initialize user state as null so that the login screen shows if not logged in.
   const [user, setUser] = useState(null);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [error, setError] = useState('');
@@ -54,9 +55,11 @@ const ClockInOut = () => {
       // Re-fetch user data to update the UI
       await fetchUser();
       setIsClockedIn(true);
+      setError('');
     } catch (err) {
       console.error('Clock In error:', err);
-      setError('Failed to clock in.');
+      const errorMsg = err.response?.data?.error || 'Failed to clock in.';
+      setError(errorMsg);
     }
   };
 
@@ -73,9 +76,11 @@ const ClockInOut = () => {
       // Re-fetch user data to update the UI
       await fetchUser();
       setIsClockedIn(false);
+      setError('');
     } catch (err) {
       console.error('Clock Out error:', err);
-      setError('Failed to clock out.');
+      const errorMsg = err.response?.data?.error || 'Failed to clock out.';
+      setError(errorMsg);
     }
   };
 
@@ -136,7 +141,8 @@ const ClockInOut = () => {
         payload,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser(response.data.user || response.data);
+      // After saving, re-fetch the user data so that updated clockEntries are reflected
+      await fetchUser();
       setShowModal(false);
       setModalError('');
     } catch (err) {
@@ -207,35 +213,29 @@ const ClockInOut = () => {
 
       {/* Edit Modal */}
       {showModal && (
-        <div
-          className="modal-overlay"
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '10px'
-          }}
-        >
-          <div
-            className="modal-content"
-            style={{
-              backgroundColor: '#fff',
-              borderRadius: '8px',
-              padding: '20px',
-              width: '100%',
-              maxWidth: '400px',
-              maxHeight: '90vh',
-              overflowY: 'auto',
-              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-            }}
-          >
+        <div className="modal-overlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '10px'
+        }}>
+          <div className="modal-content" style={{
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            padding: '20px',
+            width: '100%',
+            maxWidth: '400px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
+          }}>
             <h2>Edit Time Entries for {editDate.toLocaleDateString()}</h2>
             {modalError && <p className="modal-error" style={{ color: 'red' }}>{modalError}</p>}
             <form onSubmit={handleSave}>
