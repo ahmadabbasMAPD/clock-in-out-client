@@ -2,15 +2,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-
+import './ClockInOut.css'; // Ensure this file includes your modal CSS styles
 import api from './api';
 
 const ClockInOut = () => {
-  // Initialize user state as null.
+  // Initialize user state as null to force login if no user is set.
   const [user, setUser] = useState(null);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [error, setError] = useState('');
-  
+
   // Modal state for editing time entries
   const [showModal, setShowModal] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -60,7 +60,8 @@ const ClockInOut = () => {
       setError('Failed to clock in.');
     }
   };
-  
+
+  // Handler for clock out using the server endpoint.
   const handleClockOut = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -78,7 +79,6 @@ const ClockInOut = () => {
       setError('Failed to clock out.');
     }
   };
-  
 
   // Group clock entries by day using the timestamp field.
   const groupEntriesByDay = () => {
@@ -111,7 +111,7 @@ const ClockInOut = () => {
       return;
     }
 
-    // Set default times: if entry exists, use it; otherwise, default to 9 AM and 5 PM.
+    // Set default times: if an entry exists, use its timestamp; otherwise, default to 9 AM and 5 PM.
     const defaultClockIn = new Date(day);
     defaultClockIn.setHours(9, 0, 0, 0);
     const defaultClockOut = new Date(day);
@@ -169,7 +169,6 @@ const ClockInOut = () => {
     }).format(date);
   };
 
-  // Get grouped entries and sort the dates.
   const grouped = groupEntriesByDay();
   const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b));
 
@@ -196,15 +195,11 @@ const ClockInOut = () => {
             <h3>{date}</h3>
             <div className="entry-item">
               <div className="entry-type">Clock In:</div>
-              <div className="entry-time">
-                {formatDate(grouped[date].find(e => e.type === 'clockIn')?.timestamp)}
-              </div>
+              <div className="entry-time">{formatDate(grouped[date].find(e => e.type === 'clockIn')?.timestamp)}</div>
             </div>
             <div className="entry-item">
               <div className="entry-type">Clock Out:</div>
-              <div className="entry-time">
-                {formatDate(grouped[date].find(e => e.type === 'clockOut')?.timestamp)}
-              </div>
+              <div className="entry-time">{formatDate(grouped[date].find(e => e.type === 'clockOut')?.timestamp)}</div>
             </div>
             <button className="edit-button" onClick={() => handleEdit(new Date(date))}>
               <span role="img" aria-label="edit">✏️</span>
@@ -218,7 +213,7 @@ const ClockInOut = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Edit Time Entries for {editDate.toLocaleDateString()}</h2>
-            {modalError && <p className="modal-error" style={{ color: 'red' }}>{modalError}</p>}
+            {modalError && <p className="modal-error">{modalError}</p>}
             <form onSubmit={handleSave}>
               <div>
                 <label>Clock In:</label>
