@@ -48,7 +48,7 @@ const ClockInOut = () => {
       const token = localStorage.getItem('token');
       const currentTime = new Date();
       const response = await api.put(
-        `/api/users/${user?._id}/clockin`,
+        `/api/users/current-user/clockin`,
         { time: currentTime },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -66,7 +66,7 @@ const ClockInOut = () => {
       const token = localStorage.getItem('token');
       const currentTime = new Date();
       const response = await api.put(
-        `/api/users/${user?._id}/clockout`,
+        `/api/users/current-user/clockout`,
         { time: currentTime },
         { headers: { Authorization: `Bearer ${token}` } }
       );
