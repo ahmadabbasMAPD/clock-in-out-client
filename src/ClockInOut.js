@@ -6,10 +6,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import api from './api';
 
 const ClockInOut = () => {
-  const [user, setUser] = useState(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
-    return storedUser || {};
-  });
+  const [user, setUser] = useState(null);
   const [isClockedIn, setIsClockedIn] = useState(user.clockedIn || false);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
