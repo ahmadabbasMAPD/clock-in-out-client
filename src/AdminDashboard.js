@@ -1,9 +1,17 @@
 // src/AdminDashboard.js
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import './AdminDashboard.css';
 import api from './api';
-
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from 'recharts';
+import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -25,20 +33,18 @@ const AdminDashboard = () => {
       setError('Failed to fetch users.');
     }
   };
-  
 
   useEffect(() => {
     fetchAllUsers();
   }, []);
 
-  // Find the selected user
+  // Find the selected user (if any)
   const selectedUser = users.find(u => u._id === selectedUserId);
 
-  // Filter clock entries by the selected month (if selected).
+  // For the selected user, filter clock entries by the selected month
   const filteredEntries = selectedUser && selectedUser.clockEntries
     ? selectedUser.clockEntries.filter(entry => {
         if (!selectedMonth) return true;
-        // Extract year and month from the timestamp (YYYY-MM)
         const entryYearMonth = new Date(entry.timestamp).toISOString().slice(0, 7);
         return entryYearMonth === selectedMonth;
       })
@@ -71,14 +77,32 @@ const AdminDashboard = () => {
     return 0;
   };
 
-  // Helper: Format time into a readable string (time only)
-  const formatTime = (dateInput) => {
-    const date = new Date(dateInput);
-    if (isNaN(date.getTime())) return 'Invalid date';
-    return date.toLocaleTimeString(); // Only displays the time portion
+  // Compute weekly total hours for a user (for all entries, or you can adjust to current week)
+  const computeUserWeeklyHours = (user) => {
+    if (!user.clockEntries) return 0;
+    const grouped = groupEntriesByDay(user.clockEntries);
+    let total = 0;
+    Object.keys(grouped).forEach(day => {
+      total += computeDailyHours(grouped[day]);
+    });
+    return total;
   };
 
-  // For the month dropdown, determine the available months (in "YYYY-MM") for the selected user.
+  // Prepare data for overall chart: each user's weekly total hours
+  const overallData = users.map(user => ({
+    username: user.username,
+    weeklyHours: computeUserWeeklyHours(user),
+  }));
+
+  // Prepare data for detailed chart: selected user's daily hours for the selected month
+  const detailedData = Object.keys(groupedEntries)
+    .map(date => ({
+      date,
+      hours: computeDailyHours(groupedEntries[date]),
+    }))
+    .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  // For the month dropdown, determine the available months for the selected user.
   const availableMonths = selectedUser && selectedUser.clockEntries
     ? Array.from(
         new Set(
@@ -134,7 +158,24 @@ const AdminDashboard = () => {
 
       {selectedUser ? (
         <>
-          <h2>{selectedUser.username}'s Time Entries</h2>
+          <h2>{selectedUser.username}'s Detailed Time Entries</h2>
+          {/* Detailed Chart for Selected User */}
+          {detailedData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={detailedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip formatter={(value) => Number(value).toFixed(2)} />
+                <Legend />
+                <Bar dataKey="hours" fill="#82ca9d" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p>No detailed time entries available for the selected month.</p>
+          )}
+
+          {/* Table View */}
           {Object.keys(groupedEntries).length > 0 ? (
             <table className="admin-table">
               <thead>
@@ -152,10 +193,10 @@ const AdminDashboard = () => {
                     const dayEntries = groupedEntries[date];
                     const dailyHours = computeDailyHours(dayEntries);
                     const clockInTime = dayEntries.find(e => e.type === 'clockIn')
-                      ? formatTime(dayEntries.find(e => e.type === 'clockIn').timestamp)
+                      ? new Date(dayEntries.find(e => e.type === 'clockIn').timestamp).toLocaleTimeString()
                       : 'N/A';
                     const clockOutTime = dayEntries.find(e => e.type === 'clockOut')
-                      ? formatTime(dayEntries.find(e => e.type === 'clockOut').timestamp)
+                      ? new Date(dayEntries.find(e => e.type === 'clockOut').timestamp).toLocaleTimeString()
                       : 'N/A';
                     return (
                       <tr key={date}>
@@ -174,6 +215,23 @@ const AdminDashboard = () => {
         </>
       ) : (
         <p>Please select a user from the dropdown.</p>
+      )}
+
+      {/* Overall Chart: Weekly total hours for all users */}
+      <h2>Weekly Total Hours for All Users</h2>
+      {overallData.length > 0 ? (
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={overallData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="username" />
+            <YAxis />
+            <Tooltip formatter={(value) => Number(value).toFixed(2)} />
+            <Legend />
+            <Bar dataKey="weeklyHours" fill="#8884d8" />
+          </BarChart>
+        </ResponsiveContainer>
+      ) : (
+        <p>No user data available.</p>
       )}
     </div>
   );
