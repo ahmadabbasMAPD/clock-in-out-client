@@ -41,7 +41,7 @@ const AdminDashboard = () => {
   // Find the selected user (if any)
   const selectedUser = users.find(u => u._id === selectedUserId);
 
-  // For the selected user, filter clock entries by the selected month
+  // For the selected user, filter clock entries by the selected month.
   const filteredEntries = selectedUser && selectedUser.clockEntries
     ? selectedUser.clockEntries.filter(entry => {
         if (!selectedMonth) return true;
@@ -65,19 +65,20 @@ const AdminDashboard = () => {
 
   const groupedEntries = groupEntriesByDay(filteredEntries);
 
-  // Compute daily hours from a day's entries by pairing clockIn with clockOut.
+  // Compute daily hours by pairing the earliest clockIn and the latest clockOut.
   const computeDailyHours = (dayEntries) => {
-    if (!dayEntries) return 0;
-    const sorted = dayEntries.slice().sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-    const clockIn = sorted.find(e => e.type === 'clockIn');
-    const clockOut = sorted.find(e => e.type === 'clockOut');
-    if (clockIn && clockOut) {
-      return (new Date(clockOut.timestamp) - new Date(clockIn.timestamp)) / (1000 * 60 * 60);
-    }
-    return 0;
+    if (!dayEntries || dayEntries.length === 0) return 0;
+    // Filter entries by type.
+    const clockIns = dayEntries.filter(e => e.type === 'clockIn');
+    const clockOuts = dayEntries.filter(e => e.type === 'clockOut');
+    if (clockIns.length === 0 || clockOuts.length === 0) return 0;
+    // Get earliest clockIn and latest clockOut.
+    const earliestClockIn = new Date(Math.min(...clockIns.map(e => new Date(e.timestamp).getTime())));
+    const latestClockOut = new Date(Math.max(...clockOuts.map(e => new Date(e.timestamp).getTime())));
+    return (latestClockOut - earliestClockIn) / (1000 * 60 * 60);
   };
 
-  // Compute weekly total hours for a user (for all entries, or you can adjust to current week)
+  // Compute weekly total hours for a user.
   const computeUserWeeklyHours = (user) => {
     if (!user.clockEntries) return 0;
     const grouped = groupEntriesByDay(user.clockEntries);
@@ -88,13 +89,13 @@ const AdminDashboard = () => {
     return total;
   };
 
-  // Prepare data for overall chart: each user's weekly total hours
+  // Prepare data for overall chart: each user's weekly total hours.
   const overallData = users.map(user => ({
     username: user.username,
     weeklyHours: computeUserWeeklyHours(user),
   }));
 
-  // Prepare data for detailed chart: selected user's daily hours for the selected month
+  // Prepare data for detailed chart: selected user's daily hours for the selected month.
   const detailedData = Object.keys(groupedEntries)
     .map(date => ({
       date,
@@ -125,7 +126,6 @@ const AdminDashboard = () => {
           value={selectedUserId}
           onChange={(e) => {
             setSelectedUserId(e.target.value);
-            // Reset month selection when user changes
             setSelectedMonth('');
           }}
         >
@@ -159,7 +159,6 @@ const AdminDashboard = () => {
       {selectedUser ? (
         <>
           <h2>{selectedUser.username}'s Detailed Time Entries</h2>
-          {/* Detailed Chart for Selected User */}
           {detailedData.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={detailedData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -175,7 +174,6 @@ const AdminDashboard = () => {
             <p>No detailed time entries available for the selected month.</p>
           )}
 
-          {/* Table View */}
           {Object.keys(groupedEntries).length > 0 ? (
             <table className="admin-table">
               <thead>
@@ -217,7 +215,6 @@ const AdminDashboard = () => {
         <p>Please select a user from the dropdown.</p>
       )}
 
-      {/* Overall Chart: Weekly total hours for all users */}
       <h2>Weekly Total Hours for All Users</h2>
       {overallData.length > 0 ? (
         <ResponsiveContainer width="100%" height={300}>
