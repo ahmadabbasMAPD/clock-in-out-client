@@ -27,9 +27,7 @@ function App() {
   const [workHours, setWorkHours] = useState({ dailyHours: {}, weekTotal: 0, biweekTotal: 0 });
 
 
-  if (!user) {
-    return <Login />;
-  }
+ 
 
   useEffect(() => {
     if (user) {
