@@ -2,15 +2,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import './ClockInOut.css'; // Ensure this file includes your modal CSS styles
+import './ClockInOut.css';
 import api from './api';
 
 const ClockInOut = () => {
-  // Initialize user state as null to force login if no user is set.
+  // Initialize user state as null.
   const [user, setUser] = useState(null);
   const [isClockedIn, setIsClockedIn] = useState(false);
   const [error, setError] = useState('');
-
+  
   // Modal state for editing time entries
   const [showModal, setShowModal] = useState(false);
   const [modalError, setModalError] = useState('');
@@ -55,9 +55,12 @@ const ClockInOut = () => {
       // Re-fetch user data to update the UI
       await fetchUser();
       setIsClockedIn(true);
+      setError('');
     } catch (err) {
       console.error('Clock In error:', err);
-      setError('Failed to clock in.');
+      // Display the error message returned from the server
+      const errorMsg = err.response?.data?.error || 'Failed to clock in.';
+      setError(errorMsg);
     }
   };
 
@@ -74,9 +77,11 @@ const ClockInOut = () => {
       // Re-fetch user data to update the UI
       await fetchUser();
       setIsClockedIn(false);
+      setError('');
     } catch (err) {
       console.error('Clock Out error:', err);
-      setError('Failed to clock out.');
+      const errorMsg = err.response?.data?.error || 'Failed to clock out.';
+      setError(errorMsg);
     }
   };
 
@@ -105,13 +110,11 @@ const ClockInOut = () => {
     const clockInEntry = entries.find(e => e.type === 'clockIn');
     const clockOutEntry = entries.find(e => e.type === 'clockOut');
 
-    // If no entries exist for that day, show an error in the modal.
     if (!clockInEntry && !clockOutEntry) {
       setModalError('No existing time entries for this day to edit.');
       return;
     }
 
-    // Set default times: if an entry exists, use its timestamp; otherwise, default to 9 AM and 5 PM.
     const defaultClockIn = new Date(day);
     defaultClockIn.setHours(9, 0, 0, 0);
     const defaultClockOut = new Date(day);
@@ -213,7 +216,7 @@ const ClockInOut = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Edit Time Entries for {editDate.toLocaleDateString()}</h2>
-            {modalError && <p className="modal-error">{modalError}</p>}
+            {modalError && <p className="modal-error" style={{ color: 'red' }}>{modalError}</p>}
             <form onSubmit={handleSave}>
               <div>
                 <label>Clock In:</label>
