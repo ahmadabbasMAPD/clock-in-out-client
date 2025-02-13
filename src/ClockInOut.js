@@ -47,36 +47,38 @@ const ClockInOut = () => {
     try {
       const token = localStorage.getItem('token');
       const currentTime = new Date();
-      const response = await api.put(
+      await api.put(
         `/api/users/current-user/clock-in`,
         { time: currentTime },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser(response.data);
+      // Re-fetch user data to update the UI
+      await fetchUser();
       setIsClockedIn(true);
     } catch (err) {
       console.error('Clock In error:', err);
       setError('Failed to clock in.');
     }
   };
-
-  // Handler for clock out using the server endpoint.
+  
   const handleClockOut = async () => {
     try {
       const token = localStorage.getItem('token');
       const currentTime = new Date();
-      const response = await api.put(
+      await api.put(
         `/api/users/current-user/clock-out`,
         { time: currentTime },
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setUser(response.data);
+      // Re-fetch user data to update the UI
+      await fetchUser();
       setIsClockedIn(false);
     } catch (err) {
       console.error('Clock Out error:', err);
       setError('Failed to clock out.');
     }
   };
+  
 
   // Group clock entries by day using the timestamp field.
   const groupEntriesByDay = () => {
