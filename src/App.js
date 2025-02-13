@@ -26,6 +26,11 @@ function App() {
   const [activeTab, setActiveTab] = useState('clock');
   const [workHours, setWorkHours] = useState({ dailyHours: {}, weekTotal: 0, biweekTotal: 0 });
 
+
+  if (!user) {
+    return <Login />;
+  }
+
   useEffect(() => {
     if (user) {
       const fetchWorkHours = async () => {

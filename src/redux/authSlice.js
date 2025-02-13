@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { LOGIN, LOGOUT, LOGIN_REQUEST, LOGIN_FAILURE } from './authActions';
 
 const initialState = {
-    user: JSON.parse(localStorage.getItem('user')) || null,
+    user: null,
     token: localStorage.getItem('token') || null,
     isLoading: false,
     error: null,
