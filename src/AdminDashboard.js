@@ -19,6 +19,14 @@ const AdminDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(''); // Format "YYYY-MM"
   const [error, setError] = useState('');
 
+  // State for "Add User" modal
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState('user'); // default role
+  const [newPhone, setNewPhone] = useState('');
+  const [addUserError, setAddUserError] = useState('');
+
   // Fetch all users from the server
   const fetchAllUsers = async () => {
     try {
@@ -65,14 +73,12 @@ const AdminDashboard = () => {
 
   const groupedEntries = groupEntriesByDay(filteredEntries);
 
-  // Compute daily hours by pairing the earliest clockIn and the latest clockOut.
+  // Compute daily hours by pairing the earliest clockIn with the latest clockOut.
   const computeDailyHours = (dayEntries) => {
     if (!dayEntries || dayEntries.length === 0) return 0;
-    // Filter entries by type.
     const clockIns = dayEntries.filter(e => e.type === 'clockIn');
     const clockOuts = dayEntries.filter(e => e.type === 'clockOut');
     if (clockIns.length === 0 || clockOuts.length === 0) return 0;
-    // Get earliest clockIn and latest clockOut.
     const earliestClockIn = new Date(Math.min(...clockIns.map(e => new Date(e.timestamp).getTime())));
     const latestClockOut = new Date(Math.max(...clockOuts.map(e => new Date(e.timestamp).getTime())));
     return (latestClockOut - earliestClockIn) / (1000 * 60 * 60);
@@ -114,11 +120,105 @@ const AdminDashboard = () => {
       ).sort()
     : [];
 
+  // --- Add User functionality ---
+  const handleAddUser = async (e) => {
+    e.preventDefault();
+    try {
+      const token = localStorage.getItem('token');
+      // Call the registration endpoint. Adjust the endpoint if needed.
+      const response = await api.post('/api/auth/register', {
+        username: newUsername,
+        password: newPassword,
+        role: newRole,
+        phone: newPhone,
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      // After successful registration, refresh the user list.
+      await fetchAllUsers();
+      setShowAddUserModal(false);
+      setNewUsername('');
+      setNewPassword('');
+      setNewRole('user');
+      setNewPhone('');
+      setAddUserError('');
+    } catch (err) {
+      console.error('Error adding user:', err);
+      const errorMsg = err.response?.data?.error || 'Failed to add user.';
+      setAddUserError(errorMsg);
+    }
+  };
+
+  const handleCloseAddUserModal = () => {
+    setShowAddUserModal(false);
+    setAddUserError('');
+  };
+
+  // Render the detailed charts and table as before.
   return (
     <div className="admin-dashboard">
       <h1>Admin Dashboard</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
+      {/* Add User Section */}
+      <div className="add-user-section">
+        <button onClick={() => setShowAddUserModal(true)} className="add-user-button">
+          Add User
+        </button>
+      </div>
+
+      {showAddUserModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h2>Add New User</h2>
+            {addUserError && <p style={{ color: 'red' }}>{addUserError}</p>}
+            <form onSubmit={handleAddUser}>
+              <div>
+                <label>Username:</label>
+                <input
+                  type="text"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Password:</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label>Role:</label>
+                <select value={newRole} onChange={(e) => setNewRole(e.target.value)} required>
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+              <div>
+                <label>Phone:</label>
+                <input
+                  type="text"
+                  value={newPhone}
+                  onChange={(e) => setNewPhone(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="modal-buttons">
+                <button type="submit">Add User</button>
+                <button type="button" onClick={handleCloseAddUserModal}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Filters for detailed charts */}
       <div className="filters">
         <label htmlFor="userSelect">Select User: </label>
         <select
