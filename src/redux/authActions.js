@@ -1,5 +1,6 @@
 // src/redux/authActions.js
 import axios from 'axios';
+import api from '../api';
 
 export const LOGIN = 'LOGIN';
 export const LOGOUT = 'LOGOUT';
@@ -56,7 +57,7 @@ export const performLogin = (credentials) => async (dispatch) => {
 export const performLogout = () => async (dispatch) => {
   dispatch(logoutRequest());
   try {
-    await axios.post('/api/auth/logout');
+    await api.post('/api/auth/logout');
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     dispatch(logoutSuccess());
