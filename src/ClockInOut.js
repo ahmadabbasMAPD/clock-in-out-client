@@ -6,9 +6,12 @@ import 'react-datepicker/dist/react-datepicker.css';
 import api from './api';
 
 const ClockInOut = () => {
+  // Initialize user state as null.
   const [user, setUser] = useState(null);
-  const [isClockedIn, setIsClockedIn] = useState(user.clockedIn || false);
+  const [isClockedIn, setIsClockedIn] = useState(false);
   const [error, setError] = useState('');
+  
+  // Modal state for editing time entries
   const [showModal, setShowModal] = useState(false);
   const [modalError, setModalError] = useState('');
   const [editDate, setEditDate] = useState(null);
@@ -27,13 +30,13 @@ const ClockInOut = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(response.data);
-      setIsClockedIn(response.data.clockedIn);
+      setIsClockedIn(response.data?.clockedIn || false);
       setError('');
     } catch (err) {
       console.error('Error fetching user data:', err);
       setError('Failed to fetch user status.');
     }
-  }, [user._id]);
+  }, []);
 
   useEffect(() => {
     fetchUser();
@@ -45,7 +48,7 @@ const ClockInOut = () => {
       const token = localStorage.getItem('token');
       const currentTime = new Date();
       const response = await api.put(
-        `/api/users/${user._id}/clockin`,
+        `/api/users/${user?._id}/clockin`,
         { time: currentTime },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -63,7 +66,7 @@ const ClockInOut = () => {
       const token = localStorage.getItem('token');
       const currentTime = new Date();
       const response = await api.put(
-        `/api/users/${user._id}/clockout`,
+        `/api/users/${user?._id}/clockout`,
         { time: currentTime },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -77,7 +80,7 @@ const ClockInOut = () => {
 
   // Group clock entries by day using the timestamp field.
   const groupEntriesByDay = () => {
-    if (!user || !user.clockEntries) return {};
+    if (!user?.clockEntries) return {};
     const grouped = {};
     user.clockEntries.forEach(entry => {
       const entryDate = new Date(entry.timestamp);
@@ -100,13 +103,13 @@ const ClockInOut = () => {
     const clockInEntry = entries.find(e => e.type === 'clockIn');
     const clockOutEntry = entries.find(e => e.type === 'clockOut');
 
-    // If no entries exist for that day, display an error message in the modal.
+    // If no entries exist for that day, show an error in the modal.
     if (!clockInEntry && !clockOutEntry) {
       setModalError('No existing time entries for this day to edit.');
       return;
     }
 
-    // Set default times: if an entry exists, use its timestamp; otherwise, use defaults.
+    // Set default times: if entry exists, use it; otherwise, default to 9 AM and 5 PM.
     const defaultClockIn = new Date(day);
     defaultClockIn.setHours(9, 0, 0, 0);
     const defaultClockOut = new Date(day);
@@ -149,7 +152,7 @@ const ClockInOut = () => {
     setModalError('');
   };
 
-  // Format a date into a full readable string (for display in the grid).
+  // Format a date into a full readable string.
   const formatDate = (dateInput) => {
     const date = new Date(dateInput);
     if (isNaN(date.getTime())) return 'Invalid date';
@@ -168,15 +171,18 @@ const ClockInOut = () => {
   const grouped = groupEntriesByDay();
   const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b));
 
+  // Render a loading state if user is null.
+  if (!user) return <div>Loading...</div>;
+
   return (
     <div className="clock-in-out-container">
-      <h1 className="status">{user && user.clockedIn ? 'Clocked In' : 'Clocked Out'}</h1>
+      <h1 className="status">{user?.clockedIn ? 'Clocked In' : 'Clocked Out'}</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       <div className="button-container">
-        <button className="clock-button" onClick={handleClockIn} disabled={user && user.clockedIn}>
+        <button className="clock-button" onClick={handleClockIn} disabled={user?.clockedIn}>
           Clock In
         </button>
-        <button className="clock-button" onClick={handleClockOut} disabled={user && !user.clockedIn}>
+        <button className="clock-button" onClick={handleClockOut} disabled={!user?.clockedIn}>
           Clock Out
         </button>
       </div>
@@ -188,11 +194,15 @@ const ClockInOut = () => {
             <h3>{date}</h3>
             <div className="entry-item">
               <div className="entry-type">Clock In:</div>
-              <div className="entry-time">{formatDate(grouped[date].find(e => e.type === 'clockIn')?.timestamp)}</div>
+              <div className="entry-time">
+                {formatDate(grouped[date].find(e => e.type === 'clockIn')?.timestamp)}
+              </div>
             </div>
             <div className="entry-item">
               <div className="entry-type">Clock Out:</div>
-              <div className="entry-time">{formatDate(grouped[date].find(e => e.type === 'clockOut')?.timestamp)}</div>
+              <div className="entry-time">
+                {formatDate(grouped[date].find(e => e.type === 'clockOut')?.timestamp)}
+              </div>
             </div>
             <button className="edit-button" onClick={() => handleEdit(new Date(date))}>
               <span role="img" aria-label="edit">✏️</span>
