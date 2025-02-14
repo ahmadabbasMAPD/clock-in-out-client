@@ -19,13 +19,14 @@ const AdminDashboard = () => {
   const [selectedMonth, setSelectedMonth] = useState(''); // Format "YYYY-MM"
   const [error, setError] = useState('');
 
-  // State for "Add User" modal
+  // States for "Add User" modal and messaging
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
-  const [newRole, setNewRole] = useState('user'); // default role
+  const [newRole, setNewRole] = useState('user');
   const [newPhone, setNewPhone] = useState('');
   const [addUserError, setAddUserError] = useState('');
+  const [addUserSuccess, setAddUserSuccess] = useState('');
 
   // Fetch all users from the server
   const fetchAllUsers = async () => {
@@ -50,13 +51,14 @@ const AdminDashboard = () => {
   const selectedUser = users.find(u => u._id === selectedUserId);
 
   // For the selected user, filter clock entries by the selected month.
-  const filteredEntries = selectedUser && selectedUser.clockEntries
-    ? selectedUser.clockEntries.filter(entry => {
-        if (!selectedMonth) return true;
-        const entryYearMonth = new Date(entry.timestamp).toISOString().slice(0, 7);
-        return entryYearMonth === selectedMonth;
-      })
-    : [];
+  const filteredEntries =
+    selectedUser && selectedUser.clockEntries
+      ? selectedUser.clockEntries.filter(entry => {
+          if (!selectedMonth) return true;
+          const entryYearMonth = new Date(entry.timestamp).toISOString().slice(0, 7);
+          return entryYearMonth === selectedMonth;
+        })
+      : [];
 
   // Group entries by day using the timestamp field.
   const groupEntriesByDay = (entries) => {
@@ -120,21 +122,23 @@ const AdminDashboard = () => {
       ).sort()
     : [];
 
-  // --- Add User functionality ---
+  // --- Add User Functionality ---
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      // Call the registration endpoint. Adjust the endpoint if needed.
-      const response = await api.post('/api/auth/register', {
-        username: newUsername,
-        password: newPassword,
-        role: newRole,
-        phone: newPhone,
-      }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      // After successful registration, refresh the user list.
+      const response = await api.post(
+        '/api/auth/register',
+        {
+          username: newUsername,
+          password: newPassword,
+          role: newRole,
+          phone: newPhone,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       await fetchAllUsers();
       setShowAddUserModal(false);
       setNewUsername('');
@@ -142,6 +146,9 @@ const AdminDashboard = () => {
       setNewRole('user');
       setNewPhone('');
       setAddUserError('');
+      setAddUserSuccess('User added successfully!');
+      // Clear the success message after 3 seconds.
+      setTimeout(() => setAddUserSuccess(''), 3000);
     } catch (err) {
       console.error('Error adding user:', err);
       const errorMsg = err.response?.data?.error || 'Failed to add user.';
@@ -154,11 +161,28 @@ const AdminDashboard = () => {
     setAddUserError('');
   };
 
-  // Render the detailed charts and table as before.
+  // Format a date into a full readable string.
+  const formatDate = (dateInput) => {
+    const date = new Date(dateInput);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    return new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+      timeZoneName: 'short',
+    }).format(date);
+  };
+
   return (
     <div className="admin-dashboard">
       <h1>Admin Dashboard</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      
+      {/* Display success message for adding a user */}
+      {addUserSuccess && <p style={{ color: 'green' }}>{addUserSuccess}</p>}
 
       {/* Add User Section */}
       <div className="add-user-section">
