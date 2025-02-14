@@ -134,9 +134,7 @@ const AdminDashboard = () => {
           role: newRole,
           phone: newPhone,
         },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchAllUsers();
       setShowAddUserModal(false);
@@ -146,7 +144,6 @@ const AdminDashboard = () => {
       setNewPhone('');
       setAddUserError('');
       setAddUserSuccess('User added successfully!');
-      // Clear success message after 3 seconds
       setTimeout(() => setAddUserSuccess(''), 3000);
     } catch (err) {
       console.error('Error adding user:', err);
@@ -154,7 +151,7 @@ const AdminDashboard = () => {
       setAddUserError(errorMsg);
     }
   };
-
+  
   const handleCloseAddUserModal = () => {
     setShowAddUserModal(false);
     setAddUserError('');
