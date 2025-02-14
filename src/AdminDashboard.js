@@ -51,14 +51,13 @@ const AdminDashboard = () => {
   const selectedUser = users.find(u => u._id === selectedUserId);
 
   // For the selected user, filter clock entries by the selected month.
-  const filteredEntries =
-    selectedUser && selectedUser.clockEntries
-      ? selectedUser.clockEntries.filter(entry => {
-          if (!selectedMonth) return true;
-          const entryYearMonth = new Date(entry.timestamp).toISOString().slice(0, 7);
-          return entryYearMonth === selectedMonth;
-        })
-      : [];
+  const filteredEntries = selectedUser && selectedUser.clockEntries
+    ? selectedUser.clockEntries.filter(entry => {
+        if (!selectedMonth) return true;
+        const entryYearMonth = new Date(entry.timestamp).toISOString().slice(0, 7);
+        return entryYearMonth === selectedMonth;
+      })
+    : [];
 
   // Group entries by day using the timestamp field.
   const groupEntriesByDay = (entries) => {
@@ -147,7 +146,7 @@ const AdminDashboard = () => {
       setNewPhone('');
       setAddUserError('');
       setAddUserSuccess('User added successfully!');
-      // Clear the success message after 3 seconds.
+      // Clear success message after 3 seconds
       setTimeout(() => setAddUserSuccess(''), 3000);
     } catch (err) {
       console.error('Error adding user:', err);
@@ -161,7 +160,7 @@ const AdminDashboard = () => {
     setAddUserError('');
   };
 
-  // Format a date into a full readable string.
+  // Format a date into a readable string.
   const formatDate = (dateInput) => {
     const date = new Date(dateInput);
     if (isNaN(date.getTime())) return 'Invalid date';
@@ -180,8 +179,6 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <h1>Admin Dashboard</h1>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-      
-      {/* Display success message for adding a user */}
       {addUserSuccess && <p style={{ color: 'green' }}>{addUserSuccess}</p>}
 
       {/* Add User Section */}
@@ -260,7 +257,6 @@ const AdminDashboard = () => {
             </option>
           ))}
         </select>
-
         {selectedUser && (
           <>
             <label htmlFor="monthSelect">Select Month: </label>
