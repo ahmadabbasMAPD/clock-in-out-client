@@ -1,7 +1,6 @@
 // src/UserProfile.js
 import React, { useState, useEffect } from 'react';
 import api from './api';
-import './UserProfile.css';
 
 const UserProfile = ({ user: initialUser }) => {
   // Local state for the user data and form fields.
