@@ -213,64 +213,44 @@ const ClockInOut = () => {
 
       {/* Edit Modal */}
       {showModal && (
-        <div className="modal-overlay" style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.6)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '10px'
-        }}>
-          <div className="modal-content" style={{
-            backgroundColor: '#fff',
-            borderRadius: '8px',
-            padding: '20px',
-            width: '100%',
-            maxWidth: '400px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)'
-          }}>
-            <h2>Edit Time Entries for {editDate.toLocaleDateString()}</h2>
-            {modalError && <p className="modal-error" style={{ color: 'red' }}>{modalError}</p>}
-            <form onSubmit={handleSave}>
-              <div>
-                <label>Clock In:</label>
-                <DatePicker
-                  selected={editClockIn}
-                  onChange={(date) => setEditClockIn(date)}
-                  showTimeSelect
-                  timeIntervals={15}
-                  timeCaption="Time"
-                  dateFormat="MMMM d, yyyy h:mm aa"
-                  name="clockIn"
-                />
-              </div>
-              <div>
-                <label>Clock Out:</label>
-                <DatePicker
-                  selected={editClockOut}
-                  onChange={(date) => setEditClockOut(date)}
-                  showTimeSelect
-                  timeIntervals={15}
-                  timeCaption="Time"
-                  dateFormat="MMMM d, yyyy h:mm aa"
-                  name="clockOut"
-                />
-              </div>
-              <div className="modal-buttons">
-                <button type="submit">Save Changes</button>
-                <button type="button" onClick={handleCloseModal}>Cancel</button>
-              </div>
-            </form>
-          </div>
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <h2>Edit Time Entries for {editDate.toLocaleDateString()}</h2>
+      {modalError && <p className="modal-error" style={{ color: 'red' }}>{modalError}</p>}
+      <form onSubmit={handleSave}>
+        <div>
+          <label>Clock In:</label>
+          <DatePicker
+            selected={editClockIn}
+            onChange={(date) => setEditClockIn(date)}
+            showTimeSelect
+            timeIntervals={15}
+            timeCaption="Time"
+            dateFormat="MMMM d, yyyy h:mm aa"
+            name="clockIn"
+          />
         </div>
-      )}
+        <div>
+          <label>Clock Out:</label>
+          <DatePicker
+            selected={editClockOut}
+            onChange={(date) => setEditClockOut(date)}
+            showTimeSelect
+            timeIntervals={15}
+            timeCaption="Time"
+            dateFormat="MMMM d, yyyy h:mm aa"
+            name="clockOut"
+          />
+        </div>
+        <div className="modal-buttons">
+          <button type="submit">Save Changes</button>
+          <button type="button" onClick={handleCloseModal}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

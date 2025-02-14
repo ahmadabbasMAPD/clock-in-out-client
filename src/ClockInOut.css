@@ -1,4 +1,4 @@
-/* Modal overlay covers the entire viewport */
+/* Example CSS for responsive modal */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -10,10 +10,9 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: 10px; /* Ensure there's some padding on small screens */
+    padding: 10px;
   }
   
-  /* Modal content styling */
   .modal-content {
     background-color: #fff;
     border-radius: 8px;
@@ -25,20 +24,18 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }
   
-  /* Modal buttons layout */
   .modal-buttons {
     display: flex;
     justify-content: space-between;
     margin-top: 20px;
   }
   
-  /* Responsive adjustments for very small screens */
+  /* Media Query for very small screens */
   @media (max-width: 480px) {
     .modal-content {
       width: 90%;
       padding: 15px;
     }
-  
     .modal-buttons button {
       flex: 1;
       margin: 0 5px;
