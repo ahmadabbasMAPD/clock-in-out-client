@@ -8,14 +8,23 @@
   
   .filters {
     display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
-    gap: 15px;
+    gap: 1rem;
     margin-bottom: 20px;
   }
   
-  .filters label {
-    font-weight: bold;
-  }
+  .filters label,
+  .filters select {
+  text-align: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
   
   .filters select {
     padding: 5px;

@@ -260,40 +260,44 @@ const AdminDashboard = () => {
 
       {/* Filters for detailed charts */}
       <div className="filters">
-        <label htmlFor="userSelect">Select User: </label>
-        <select
-          id="userSelect"
-          value={selectedUserId}
-          onChange={(e) => {
-            setSelectedUserId(e.target.value);
-            setSelectedMonth('');
-          }}
-        >
-          <option value="">--Select User--</option>
-          {users.map((user) => (
-            <option key={user._id} value={user._id}>
-              {user.username}
-            </option>
-          ))}
-        </select>
-        {selectedUser && (
-          <>
-            <label htmlFor="monthSelect">Select Month: </label>
-            <select
-              id="monthSelect"
-              value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-            >
-              <option value="">--All Months--</option>
-              {availableMonths.map((month) => (
-                <option key={month} value={month}>
-                  {month}
-                </option>
-              ))}
-            </select>
-          </>
-        )}
-      </div>
+  <div className="filter-group">
+    <label htmlFor="userSelect">Select User: </label>
+    <select
+      id="userSelect"
+      value={selectedUserId}
+      onChange={(e) => {
+        setSelectedUserId(e.target.value);
+        setSelectedMonth('');
+      }}
+    >
+      <option value="">--Select User--</option>
+      {users.map((user) => (
+        <option key={user._id} value={user._id}>
+          {user.username}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  {selectedUser && (
+    <div className="filter-group">
+      <label htmlFor="monthSelect">Select Month: </label>
+      <select
+        id="monthSelect"
+        value={selectedMonth}
+        onChange={(e) => setSelectedMonth(e.target.value)}
+      >
+        <option value="">--All Months--</option>
+        {availableMonths.map((month) => (
+          <option key={month} value={month}>
+            {month}
+          </option>
+        ))}
+      </select>
+    </div>
+  )}
+</div>
+
 
       {selectedUser ? (
         <>
