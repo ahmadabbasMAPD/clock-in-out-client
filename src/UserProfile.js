@@ -2,21 +2,29 @@
 import React, { useState, useEffect } from 'react';
 import api from './api';
 
+
 const UserProfile = ({ user: initialUser }) => {
-  // Local state for user data and form fields.
+  // Local state for the user data and form fields.
   const [user, setUser] = useState(initialUser);
-  const [username, setUsername] = useState(initialUser.username || '');
-  const [role, setRole] = useState(initialUser.role || 'user');
+  const [username, setUsername] = useState(initialUser?.username || '');
+  const [role, setRole] = useState(initialUser?.role || 'user');
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   // Update local state if the passed-in user prop changes.
   useEffect(() => {
-    setUser(initialUser);
-    setUsername(initialUser.username || '');
-    setRole(initialUser.role || 'user');
+    if (initialUser) {
+      setUser(initialUser);
+      setUsername(initialUser.username || '');
+      setRole(initialUser.role || 'user');
+    }
   }, [initialUser]);
+
+  // If user is not loaded or doesn't have an _id, display a loading indicator.
+  if (!user || !user._id) {
+    return <div>Loading user profile...</div>;
+  }
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -24,10 +32,12 @@ const UserProfile = ({ user: initialUser }) => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      // Only update username and role. Phone remains unchanged.
-      const response = await api.put(`/api/users/${user._id}`, { username, role }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      // Only update username and role. (Phone number is not editable.)
+      const response = await api.put(
+        `/api/users/${user._id}`,
+        { username, role },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setUser(response.data);
       setMessage('Profile updated successfully!');
       setIsEditing(false);
