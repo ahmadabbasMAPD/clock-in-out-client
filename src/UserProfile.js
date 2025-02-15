@@ -1,11 +1,11 @@
 // src/UserProfile.js
 import React, { useState, useEffect } from 'react';
 import api from './api';
-
+import './UserProfile.css';
 
 const UserProfile = ({ user: initialUser }) => {
-  // Local state for the user data and form fields.
-  const [user, setUser] = useState(initialUser);
+  // If no initial user is provided, initialize with an empty object.
+  const [user, setUser] = useState(initialUser || {});
   const [username, setUsername] = useState(initialUser?.username || '');
   const [role, setRole] = useState(initialUser?.role || 'user');
   const [isEditing, setIsEditing] = useState(false);
@@ -14,17 +14,32 @@ const UserProfile = ({ user: initialUser }) => {
 
   // Update local state if the passed-in user prop changes.
   useEffect(() => {
-    if (initialUser) {
-      setUser(initialUser);
-      setUsername(initialUser.username || '');
-      setRole(initialUser.role || 'user');
-    }
+    setUser(initialUser || {});
+    setUsername(initialUser?.username || '');
+    setRole(initialUser?.role || 'user');
   }, [initialUser]);
 
-  // If user is not loaded or doesn't have an _id, display a loading indicator.
-  if (!user || !user._id) {
-    return <div>Loading user profile...</div>;
-  }
+  // If user._id is not present but we have a token, fetch the user from the API.
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!user._id && token) {
+      const fetchUser = async () => {
+        try {
+          const response = await api.get('/api/users/current-user', {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setUser(response.data);
+          setUsername(response.data.username || '');
+          setRole(response.data.role || 'user');
+          setError('');
+        } catch (err) {
+          console.error('Error fetching profile:', err);
+          setError('Failed to fetch user profile.');
+        }
+      };
+      fetchUser();
+    }
+  }, [user, initialUser]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -32,7 +47,7 @@ const UserProfile = ({ user: initialUser }) => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      // Only update username and role. (Phone number is not editable.)
+      // Update only username and role.
       const response = await api.put(
         `/api/users/${user._id}`,
         { username, role },
@@ -47,6 +62,16 @@ const UserProfile = ({ user: initialUser }) => {
       setError(errMsg);
     }
   };
+
+  // If no token exists, ask the user to log in.
+  if (!localStorage.getItem('token')) {
+    return <div>Please log in.</div>;
+  }
+
+  // If user data (i.e. _id) isn't loaded yet, show a loading indicator.
+  if (!user._id) {
+    return <div>Loading user profile...</div>;
+  }
 
   return (
     <div className="user-profile">
