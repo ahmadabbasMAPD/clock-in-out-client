@@ -1,7 +1,7 @@
 // src/UserProfile.js
 import React, { useState, useEffect } from 'react';
 import api from './api';
-import './UserProfile.css';
+
 
 const UserProfile = ({ user: initialUser }) => {
   // If no initial user is provided, initialize with an empty object.
