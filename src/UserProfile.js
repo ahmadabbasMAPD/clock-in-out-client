@@ -3,10 +3,9 @@ import React, { useState, useEffect } from 'react';
 import api from './api';
 
 const UserProfile = ({ user: initialUser }) => {
-  // Local state for the user data and form fields.
+  // Local state for user data and form fields.
   const [user, setUser] = useState(initialUser);
   const [username, setUsername] = useState(initialUser.username || '');
-  const [phone, setPhone] = useState(initialUser.phone || '');
   const [role, setRole] = useState(initialUser.role || 'user');
   const [isEditing, setIsEditing] = useState(false);
   const [message, setMessage] = useState('');
@@ -16,7 +15,6 @@ const UserProfile = ({ user: initialUser }) => {
   useEffect(() => {
     setUser(initialUser);
     setUsername(initialUser.username || '');
-    setPhone(initialUser.phone || '');
     setRole(initialUser.role || 'user');
   }, [initialUser]);
 
@@ -26,8 +24,8 @@ const UserProfile = ({ user: initialUser }) => {
     setError('');
     try {
       const token = localStorage.getItem('token');
-      // Send a PUT request to update the user's details.
-      const response = await api.put(`/api/users/${user._id}`, { username, phone, role }, {
+      // Only update username and role. Phone remains unchanged.
+      const response = await api.put(`/api/users/${user._id}`, { username, role }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(response.data);
@@ -50,7 +48,7 @@ const UserProfile = ({ user: initialUser }) => {
         <div className="profile-display">
           <p><strong>Username:</strong> {user.username}</p>
           <p><strong>Role:</strong> {user.role}</p>
-          <p><strong>Phone:</strong> {user.phone}</p>
+          <p><strong>Phone:</strong> {user.phone || 'N/A'}</p>
           <button onClick={() => setIsEditing(true)}>Edit Profile</button>
         </div>
       ) : (
@@ -61,15 +59,6 @@ const UserProfile = ({ user: initialUser }) => {
               type="text" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <label>Phone:</label>
-            <input 
-              type="text" 
-              value={phone} 
-              onChange={(e) => setPhone(e.target.value)}
               required
             />
           </div>
