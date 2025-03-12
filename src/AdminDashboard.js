@@ -1,6 +1,8 @@
 // src/AdminDashboard.js
 import React, { useState, useEffect } from 'react';
 import api from './api';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import {
   BarChart,
   Bar,
@@ -14,12 +16,13 @@ import {
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
+  // States for users, selection and errors
   const [users, setUsers] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState('');
-  const [selectedMonth, setSelectedMonth] = useState(''); // Format "YYYY-MM"
+  const [selectedMonth, setSelectedMonth] = useState('');
   const [error, setError] = useState('');
 
-  // States for "Add User" modal and messaging
+  // States for "Add User" modal
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -28,7 +31,14 @@ const AdminDashboard = () => {
   const [addUserError, setAddUserError] = useState('');
   const [addUserSuccess, setAddUserSuccess] = useState('');
 
-  // Fetch all users from the server
+  // NEW: States for editing time entries in admin view
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editDate, setEditDate] = useState(null);
+  const [editClockIn, setEditClockIn] = useState(new Date());
+  const [editClockOut, setEditClockOut] = useState(new Date());
+  const [editModalError, setEditModalError] = useState('');
+
+  // Fetch all users
   const fetchAllUsers = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -47,10 +57,9 @@ const AdminDashboard = () => {
     fetchAllUsers();
   }, []);
 
-  // Find the selected user (if any)
   const selectedUser = users.find((u) => u._id === selectedUserId);
 
-  // For the selected user, filter clock entries by the selected month.
+  // Filter clock entries for the selected user (and month if selected)
   const filteredEntries =
     selectedUser && selectedUser.clockEntries
       ? selectedUser.clockEntries.filter((entry) => {
@@ -62,7 +71,7 @@ const AdminDashboard = () => {
         })
       : [];
 
-  // Group entries by day using the timestamp field.
+  // Helper to group entries by day
   const groupEntriesByDay = (entries) => {
     const grouped = {};
     entries.forEach((entry) => {
@@ -77,7 +86,7 @@ const AdminDashboard = () => {
 
   const groupedEntries = groupEntriesByDay(filteredEntries);
 
-  // Compute daily hours by pairing the earliest clockIn with the latest clockOut.
+  // Helper to compute daily hours from clock in/out pairs
   const computeDailyHours = (dayEntries) => {
     if (!dayEntries || dayEntries.length === 0) return 0;
     const clockIns = dayEntries.filter((e) => e.type === 'clockIn');
@@ -92,7 +101,7 @@ const AdminDashboard = () => {
     return (latestClockOut - earliestClockIn) / (1000 * 60 * 60);
   };
 
-  // Compute weekly total hours for a user.
+  // Compute overall weekly hours for each user
   const computeUserWeeklyHours = (user) => {
     if (!user.clockEntries) return 0;
     const grouped = groupEntriesByDay(user.clockEntries);
@@ -103,21 +112,20 @@ const AdminDashboard = () => {
     return total;
   };
 
-  // Prepare data for overall chart: each user's weekly total hours.
   const overallData = users.map((user) => ({
     username: user.username,
     weeklyHours: computeUserWeeklyHours(user),
   }));
 
-  // Prepare data for detailed chart: selected user's daily hours for the selected month.
-  const detailedData = Object.keys(groupedEntries)
+  // Prepare detailed chart data for the selected user (if needed)
+  const detailedData = Object.keys(groupEntriesByDay(filteredEntries))
     .map((date) => ({
       date,
-      hours: computeDailyHours(groupedEntries[date]),
+      hours: computeDailyHours(groupEntriesByDay(filteredEntries)[date]),
     }))
     .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-  // For the month dropdown, determine the available months for the selected user.
+  // Determine available months from selected user's entries
   const availableMonths =
     selectedUser && selectedUser.clockEntries
       ? Array.from(
@@ -129,48 +137,55 @@ const AdminDashboard = () => {
         ).sort()
       : [];
 
-  // --- Add User Functionality ---
-  const handleAddUser = async (e) => {
+  // NEW: Open the edit modal for a given date
+  const handleEdit = (date) => {
+    setEditDate(new Date(date));
+    setEditModalError('');
+    const dayEntries = groupedEntries[date] || [];
+    const clockInEntry = dayEntries.find((e) => e.type === 'clockIn');
+    const clockOutEntry = dayEntries.find((e) => e.type === 'clockOut');
+
+    const defaultClockIn = new Date(date);
+    defaultClockIn.setHours(9, 0, 0, 0);
+    const defaultClockOut = new Date(date);
+    defaultClockOut.setHours(17, 0, 0, 0);
+
+    setEditClockIn(clockInEntry ? new Date(clockInEntry.timestamp) : defaultClockIn);
+    setEditClockOut(clockOutEntry ? new Date(clockOutEntry.timestamp) : defaultClockOut);
+    setShowEditModal(true);
+  };
+
+  // NEW: Save updated time entries
+  const handleSave = async (e) => {
     e.preventDefault();
+    if (!selectedUser || !editDate) return;
     try {
       const token = localStorage.getItem('token');
-      // Pass phone as an empty string if not provided.
-      const response = await api.post(
-        '/api/auth/register',
-        {
-          username: newUsername,
-          password: newPassword,
-          role: newRole,
-          phone: newPhone || '',
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+      const payload = {
+        date: editDate.toISOString().split('T')[0],
+        clockIn: editClockIn ? editClockIn.toISOString() : undefined,
+        clockOut: editClockOut ? editClockOut.toISOString() : undefined,
+      };
+      await api.put(
+        `/api/users/${selectedUser._id}/time-entries`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       await fetchAllUsers();
-      setShowAddUserModal(false);
-      setNewUsername('');
-      setNewPassword('');
-      setNewRole('user');
-      setNewPhone('');
-      setAddUserError('');
-      setAddUserSuccess('User added successfully!');
-      // Clear the success message after 3 seconds.
-      setTimeout(() => setAddUserSuccess(''), 3000);
+      setShowEditModal(false);
+      setEditModalError('');
     } catch (err) {
-      console.error('Error adding user:', err);
-      const errorMsg =
-        err.response?.data?.error || 'Failed to add user.';
-      setAddUserError(errorMsg);
+      console.error('Error updating time entries:', err);
+      const errorMsg = err.response?.data?.error || 'Failed to update time entries.';
+      setEditModalError(errorMsg);
     }
   };
 
-  const handleCloseAddUserModal = () => {
-    setShowAddUserModal(false);
-    setAddUserError('');
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setEditModalError('');
   };
 
-  // Format a date into a readable string.
   const formatDate = (dateInput) => {
     const date = new Date(dateInput);
     if (isNaN(date.getTime())) return 'Invalid date';
@@ -185,6 +200,7 @@ const AdminDashboard = () => {
     }).format(date);
   };
 
+  // --- Render ---
   return (
     <div className="admin-dashboard">
       <h1>Admin Dashboard</h1>
@@ -205,10 +221,37 @@ const AdminDashboard = () => {
         <div className="modal-overlay">
           <div className="modal-content">
             <h2>Add New User</h2>
-            {addUserError && (
-              <p style={{ color: 'red' }}>{addUserError}</p>
-            )}
-            <form onSubmit={handleAddUser}>
+            {addUserError && <p style={{ color: 'red' }}>{addUserError}</p>}
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                const token = localStorage.getItem('token');
+                await api.post(
+                  '/api/auth/register',
+                  {
+                    username: newUsername,
+                    password: newPassword,
+                    role: newRole,
+                    phone: newPhone || '',
+                  },
+                  { headers: { Authorization: `Bearer ${token}` } }
+                );
+                await fetchAllUsers();
+                setShowAddUserModal(false);
+                setNewUsername('');
+                setNewPassword('');
+                setNewRole('user');
+                setNewPhone('');
+                setAddUserError('');
+                setAddUserSuccess('User added successfully!');
+                setTimeout(() => setAddUserSuccess(''), 3000);
+              } catch (err) {
+                console.error('Error adding user:', err);
+                const errorMsg =
+                  err.response?.data?.error || 'Failed to add user.';
+                setAddUserError(errorMsg);
+              }
+            }}>
               <div>
                 <label>Username:</label>
                 <input
@@ -244,12 +287,11 @@ const AdminDashboard = () => {
                   type="text"
                   value={newPhone}
                   onChange={(e) => setNewPhone(e.target.value)}
-                  // Removed the required attribute so phone is optional.
                 />
               </div>
               <div className="modal-buttons">
                 <button type="submit">Add User</button>
-                <button type="button" onClick={handleCloseAddUserModal}>
+                <button type="button" onClick={() => { setShowAddUserModal(false); setAddUserError(''); }}>
                   Cancel
                 </button>
               </div>
@@ -258,46 +300,44 @@ const AdminDashboard = () => {
         </div>
       )}
 
-      {/* Filters for detailed charts */}
+      {/* Filters */}
       <div className="filters">
-  <div className="filter-group">
-    <label htmlFor="userSelect">Select User: </label>
-    <select
-      id="userSelect"
-      value={selectedUserId}
-      onChange={(e) => {
-        setSelectedUserId(e.target.value);
-        setSelectedMonth('');
-      }}
-    >
-      <option value="">--Select User--</option>
-      {users.map((user) => (
-        <option key={user._id} value={user._id}>
-          {user.username}
-        </option>
-      ))}
-    </select>
-  </div>
-
-  {selectedUser && (
-    <div className="filter-group">
-      <label htmlFor="monthSelect">Select Month: </label>
-      <select
-        id="monthSelect"
-        value={selectedMonth}
-        onChange={(e) => setSelectedMonth(e.target.value)}
-      >
-        <option value="">--All Months--</option>
-        {availableMonths.map((month) => (
-          <option key={month} value={month}>
-            {month}
-          </option>
-        ))}
-      </select>
-    </div>
-  )}
-</div>
-
+        <div className="filter-group">
+          <label htmlFor="userSelect">Select User: </label>
+          <select
+            id="userSelect"
+            value={selectedUserId}
+            onChange={(e) => {
+              setSelectedUserId(e.target.value);
+              setSelectedMonth('');
+            }}
+          >
+            <option value="">--Select User--</option>
+            {users.map((user) => (
+              <option key={user._id} value={user._id}>
+                {user.username}
+              </option>
+            ))}
+          </select>
+        </div>
+        {selectedUser && (
+          <div className="filter-group">
+            <label htmlFor="monthSelect">Select Month: </label>
+            <select
+              id="monthSelect"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              <option value="">--All Months--</option>
+              {availableMonths.map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
 
       {selectedUser ? (
         <>
@@ -328,6 +368,7 @@ const AdminDashboard = () => {
                   <th>Clock In</th>
                   <th>Clock Out</th>
                   <th>Hours</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -336,16 +377,12 @@ const AdminDashboard = () => {
                   .map((date) => {
                     const dayEntries = groupedEntries[date];
                     const dailyHours = computeDailyHours(dayEntries);
-                    const clockInTime = dayEntries.find(
-                      (e) => e.type === 'clockIn'
-                    )
+                    const clockInTime = dayEntries.find((e) => e.type === 'clockIn')
                       ? new Date(
                           dayEntries.find((e) => e.type === 'clockIn').timestamp
                         ).toLocaleTimeString()
                       : 'N/A';
-                    const clockOutTime = dayEntries.find(
-                      (e) => e.type === 'clockOut'
-                    )
+                    const clockOutTime = dayEntries.find((e) => e.type === 'clockOut')
                       ? new Date(
                           dayEntries.find((e) => e.type === 'clockOut').timestamp
                         ).toLocaleTimeString()
@@ -356,6 +393,11 @@ const AdminDashboard = () => {
                         <td>{clockInTime}</td>
                         <td>{clockOutTime}</td>
                         <td>{dailyHours.toFixed(2)}</td>
+                        <td>
+                          <button onClick={() => handleEdit(date)}>
+                            <span role="img" aria-label="edit">✏️</span>
+                          </button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -386,6 +428,73 @@ const AdminDashboard = () => {
         </ResponsiveContainer>
       ) : (
         <p>No user data available.</p>
+      )}
+
+      {/* NEW: Edit Modal */}
+      {showEditModal && (
+        <div
+          className="modal-overlay"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '10px',
+          }}
+        >
+          <div
+            className="modal-content"
+            style={{
+              backgroundColor: '#fff',
+              borderRadius: '8px',
+              padding: '20px',
+              width: '100%',
+              maxWidth: '400px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <h2>Edit Time Entries for {editDate ? editDate.toLocaleDateString() : ''}</h2>
+            {editModalError && <p style={{ color: 'red' }}>{editModalError}</p>}
+            <form onSubmit={handleSave}>
+              <div>
+                <label>Clock In:</label>
+                <DatePicker
+                  selected={editClockIn}
+                  onChange={(date) => setEditClockIn(date)}
+                  showTimeSelect
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  dateFormat="MMMM d, yyyy h:mm aa"
+                />
+              </div>
+              <div>
+                <label>Clock Out:</label>
+                <DatePicker
+                  selected={editClockOut}
+                  onChange={(date) => setEditClockOut(date)}
+                  showTimeSelect
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  dateFormat="MMMM d, yyyy h:mm aa"
+                />
+              </div>
+              <div className="modal-buttons">
+                <button type="submit">Save Changes</button>
+                <button type="button" onClick={handleCloseEditModal}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
