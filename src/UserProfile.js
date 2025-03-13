@@ -83,7 +83,6 @@ const UserProfile = ({ user: initialUser }) => {
         <div className="profile-display">
           <p><strong>Username:</strong> {user.username}</p>
           <p><strong>Role:</strong> {user.role}</p>
-          <p><strong>Phone:</strong> {user.phone || 'N/A'}</p>
           <button onClick={() => setIsEditing(true)}>Edit Profile</button>
         </div>
       ) : (
