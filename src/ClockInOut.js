@@ -89,7 +89,7 @@ const ClockInOut = () => {
   };
 
   const grouped = groupEntriesByDay();
-  const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b));
+  const sortedDates = Object.keys(grouped).sort((a, b) => new Date(b) - new Date(a));
 
   if (!user) return <div>Loading...</div>;
 
