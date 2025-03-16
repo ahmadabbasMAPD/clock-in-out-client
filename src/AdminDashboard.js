@@ -212,7 +212,11 @@ const AdminDashboard = () => {
         <button
           onClick={() => setShowAddUserModal(true)}
           className="tab "
-          style={{ padding: '10px 20px' }} 
+          style={{ 
+            marginBlockStart: '0.67em',
+            marginBlockEnd: '0.67em'
+          }} 
+          
         >
           Add User
         </button>
