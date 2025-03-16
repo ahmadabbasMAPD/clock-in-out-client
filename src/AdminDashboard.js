@@ -211,7 +211,7 @@ const AdminDashboard = () => {
       <div className="add-user-section">
         <button
           onClick={() => setShowAddUserModal(true)}
-          className="clock-button"
+          className="tab "
         >
           Add User
         </button>
